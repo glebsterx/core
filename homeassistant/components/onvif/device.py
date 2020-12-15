@@ -252,6 +252,15 @@ class ONVIFDevice:
             pullpoint = await self.events.async_start()
         except (ONVIFError, Fault):
             pass
+        
+		if not pullpoint:
+			try:
+				LOGGER.debug("Trying to get pullpoint capabilities from device service instead of event service")
+            	device_mgmt = self.device.create_devicemgmt_service()
+            	event_capabilities = await device_mgmt.GetCapabilities({"Category": "Events"})
+            	pullpoint = event_capabilities.Events.WSPullPointSupport
+        	except (ONVIFError, Fault):
+            	pass
 
         ptz = False
         try:
